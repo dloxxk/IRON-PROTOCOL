@@ -429,8 +429,11 @@ def render_main_lift(ex, wk_idx, d_idx, ex_idx, username):
 
     if changed: save_user_data(username)
 
-def render_accessory_slot(slot, day_key, slot_idx, username):
+def render_accessory_slot(slot, day_key, slot_idx, username, wk_idx):
+    # sel_key (storage key) is shared across weeks of the same day — the choice persists for the whole block.
     sel_key = f"acc_{username}_{day_key}_{slot_idx}"
+    # widget_key must be unique per week/tab to avoid Streamlit duplicate-element errors.
+    widget_key = f"sel_{sel_key}_w{wk_idx}"
     saved = st.session_state.acc_selections.get(sel_key, slot["options"][0])
     presc = ACC_PRESCRIPTION.get(slot["cat"], {"sets":3,"reps":"10","rpe":7,"note":""})
 
@@ -444,7 +447,7 @@ def render_accessory_slot(slot, day_key, slot_idx, username):
         f"Ejercicio — {slot['cat']}",
         options=slot["options"],
         index=slot["options"].index(saved) if saved in slot["options"] else 0,
-        key=f"sel_{sel_key}",
+        key=widget_key,
         label_visibility="collapsed",
     )
     if chosen != st.session_state.acc_selections.get(sel_key):
@@ -554,7 +557,7 @@ def render_app():
                         if slots:
                             st.markdown(f"<div style='font-size:0.65rem;color:{dc};text-transform:uppercase;letter-spacing:0.1em;margin:0.8rem 0 0.4rem;'>⬜ Accesorios Científicos</div>", unsafe_allow_html=True)
                             for slot_idx, slot in enumerate(slots):
-                                render_accessory_slot(slot, day.acc_key, slot_idx, username)
+                                render_accessory_slot(slot, day.acc_key, slot_idx, username, wk_idx)
 
     # ════════════════════════════════════════════════════════
     #  CALCULATOR
